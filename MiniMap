@@ -1,0 +1,17 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MiniMap : MonoBehaviour
+{
+    public Transform joueur;
+    // Start is called before the first frame update
+    private void LateUpdate()
+    {
+        Vector3 nouvellePosition = joueur.position;
+        nouvellePosition.y = transform.position.y;
+        transform.position = nouvellePosition;
+
+        transform.rotation = Quaternion.Euler(90f, joueur.eulerAngles.y, 0f);
+    }
+}
