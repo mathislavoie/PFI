@@ -1,0 +1,119 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+
+public class MouvementJoueur : MonoBehaviour
+{
+    [Header("Mouvement")]
+    public float vitesseDéplacement;
+
+    public float groundDrag;
+
+    public float forceSaut;
+    public float tempsSaut;
+    public float multiplieurAir;
+    bool pretÀSauter;
+
+    [HideInInspector] public float marcheVitesse;
+    [HideInInspector] public float sprintVitesse;
+
+    [Header("Keybinds")]
+    public KeyCode jumpKey = KeyCode.Space;
+
+    [Header("Ground Check")]
+    public float grandeurJoueur;
+    public LayerMask whatIsGround;
+    bool grounded;
+
+    public Transform orientation;
+
+    float horizontalInput;
+    float verticalInput;
+
+    Vector3 directionMouvement;
+
+    Rigidbody rb;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
+
+        pretÀSauter = true;
+    }
+
+    private void Update()
+    {
+        // ground check
+        grounded = Physics.Raycast(transform.position, Vector3.down, grandeurJoueur * 0.5f + 0.3f, whatIsGround);
+
+        MyInput();
+        SpeedControl();
+
+        // handle drag
+        if (grounded)
+            rb.drag = groundDrag;
+        else
+            rb.drag = 0;
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
+    }
+
+    private void MyInput()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+
+        // when to jump
+        if (Input.GetKey(jumpKey) && pretÀSauter && grounded)
+        {
+            pretÀSauter = false;
+
+            Jump();
+
+            Invoke(nameof(ResetJump), tempsSaut);
+        }
+    }
+
+    private void MovePlayer()
+    {
+        // calculate movement direction
+        directionMouvement = orientation.forward * verticalInput + orientation.right * horizontalInput;
+
+        // on ground
+        if (grounded)
+            rb.AddForce(directionMouvement.normalized * vitesseDéplacement * 10f, ForceMode.Force);
+
+        // in air
+        else if (!grounded)
+            rb.AddForce(directionMouvement.normalized * vitesseDéplacement * 10f * multiplieurAir, ForceMode.Force);
+    }
+
+    private void SpeedControl()
+    {
+        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        // limit velocity if needed
+        if (flatVel.magnitude > vitesseDéplacement)
+        {
+            Vector3 limitedVel = flatVel.normalized * vitesseDéplacement;
+            rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+        }
+    }
+
+    private void Jump()
+    {
+        // reset y velocity
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        rb.AddForce(transform.up * forceSaut, ForceMode.Impulse);
+    }
+    private void ResetJump()
+    {
+        pretÀSauter = true;
+    }
+}
