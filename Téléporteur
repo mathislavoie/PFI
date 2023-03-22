@@ -1,0 +1,25 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Téléporteur : MonoBehaviour
+{
+    // Start is called before the first frame update
+    public Transform joueur;
+    public Transform camerapos;
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+    private void OnTriggerEnter(Collider col)
+    {
+        joueur.transform.position = new Vector3(Random.Range(-125.0f, 125.0f), col.transform.position.y, Random.Range(-123.0f, 123.0f));
+        camerapos.transform.position = joueur.transform.position;
+    }
+}
